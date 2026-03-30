@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background-color: #f0fdfa;
+    color: #1a202c;
+    margin: 0;
+  }
+
+  #root {
+    width: 100%;
+    min-height: 100vh;
+  }
+}
