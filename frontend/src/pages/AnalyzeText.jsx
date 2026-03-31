@@ -2,10 +2,13 @@ import { useState } from 'react'
 import LoadingSpinner from '../components/LoadingSpinner.jsx'
 
 const SAMPLE_TEXT =
-  'The mRNA COVID-19 vaccine induces robust expression of ACE2 and TMPRSS2 in respiratory ' +
-  'epithelial cells. Studies show that IFNG and TNF are upregulated following BNT162b2 vaccination, ' +
-  'while IL6 levels correlate with adverse effects. The spike protein interacts with CD4 and CD8A ' +
-  'T-cell receptors to promote adaptive immunity.'
+  'The mRNA COVID-19 vaccine BNT162b2 developed by Pfizer induces robust expression of ACE2 and TMPRSS2 ' +
+  'in respiratory epithelial cells. Studies show that IFNG and TNF are significantly upregulated following ' +
+  'vaccination, while IL6 levels correlate with adverse effects including fever and myalgia. The spike ' +
+  'protein interacts with CD4 and CD8A T-cell receptors to promote adaptive immunity. Adjuvant formulations ' +
+  'containing aluminum hydroxide enhance the BCG vaccine response through NLRP3 inflammasome activation and ' +
+  'IL1B release. Comparative studies of influenza vaccine and hepatitis B vaccine show shared upregulation ' +
+  'of STAT1 and IRF7 in the innate immune response pathway.'
 
 // Words to exclude from gene detection
 const GENE_EXCLUSIONS = new Set([
@@ -13,6 +16,26 @@ const GENE_EXCLUSIONS = new Set([
   'WAS', 'HAS', 'HAD', 'WHO', 'ALL', 'MHC', 'HLA', 'BMI', 'ICU', 'FDA', 'CDC', 'NIH',
   'COVID', 'SARS', 'MRNA', 'ACE', 'BCG', 'MMR', 'DTP', 'HPV',
 ])
+
+// Vaccine-related terms for highlighting (frontend-only, not sent to BioBERT)
+const VACCINE_TERMS = new Set([
+  'vaccine', 'vaccination', 'immunization', 'BCG', 'BNT162b2', 'mRNA-1273',
+  'ChAdOx1', 'Ad26.COV2.S', 'Sputnik', 'Sinovac', 'Pfizer', 'Moderna',
+  'AstraZeneca', 'Covaxin', 'Novavax', 'adjuvant', 'antigen', 'booster',
+  'influenza vaccine', 'COVID-19 vaccine', 'hepatitis B vaccine',
+  'MMR vaccine', 'HPV vaccine', 'pneumococcal vaccine',
+])
+
+function detectVaccineTerms(text) {
+  const found = new Set()
+  // Check multi-word terms first (longest match)
+  const sortedTerms = [...VACCINE_TERMS].sort((a, b) => b.length - a.length)
+  for (const term of sortedTerms) {
+    const regex = new RegExp(`\\b${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi')
+    if (regex.test(text)) found.add(term)
+  }
+  return [...found]
+}
 
 function detectGenes(text) {
   const matches = text.match(/\b([A-Z][A-Z0-9]{1,9})\b/g) ?? []
@@ -49,6 +72,7 @@ export default function AnalyzeText() {
 
   // Step 2: gene chips
   const [detectedGenes, setDetectedGenes] = useState([]) // { symbol, confirmed }
+  const [detectedVaccineTerms, setDetectedVaccineTerms] = useState([])
   const [geneError, setGeneError] = useState(null)
 
   // Step 3: predictions
@@ -76,6 +100,7 @@ export default function AnalyzeText() {
     }
     setGeneError(null)
     setDetectedGenes(genes.map((g) => ({ symbol: g, confirmed: true })))
+    setDetectedVaccineTerms(detectVaccineTerms(text))
     setPredictions([])
     setSummary(null)
     setStep(2)
@@ -167,6 +192,7 @@ export default function AnalyzeText() {
     setText('')
     setStep(1)
     setDetectedGenes([])
+    setDetectedVaccineTerms([])
     setPredictions([])
     setSummary(null)
     setGeneError(null)
@@ -249,6 +275,11 @@ export default function AnalyzeText() {
             <p className="text-xs text-gray-400 mt-0.5">
               Click to toggle, &times; to remove. Need at least 2 confirmed genes to analyze.
             </p>
+            {detectedVaccineTerms.length > 0 && (
+              <div className="text-xs text-teal-600 mt-1">
+                Also detected: {detectedVaccineTerms.length} vaccine-related term{detectedVaccineTerms.length !== 1 ? 's' : ''} (highlighted below)
+              </div>
+            )}
           </div>
           <div className="flex flex-wrap gap-2">
             {detectedGenes.map((g) => (
@@ -270,6 +301,19 @@ export default function AnalyzeText() {
               </span>
             ))}
           </div>
+          {detectedVaccineTerms.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              <span className="text-xs text-gray-400 self-center">Vaccine terms (info only):</span>
+              {detectedVaccineTerms.map((term) => (
+                <span
+                  key={term}
+                  className="inline-flex items-center text-xs px-3 py-1 rounded-full bg-teal-50 text-teal-700 border border-teal-200 select-none"
+                >
+                  {term}
+                </span>
+              ))}
+            </div>
+          )}
           <div className="flex items-center gap-3">
             <button
               onClick={handleAnalyzeInteractions}

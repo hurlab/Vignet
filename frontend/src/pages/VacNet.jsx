@@ -474,10 +474,60 @@ export default function VacNet() {
           )}
 
           {!hasSelection && !loading && (
-            <div className="flex items-center justify-center flex-1 text-gray-400 text-sm text-center px-8">
-              <div>
-                <p>Select a vaccine from the VO tree, or enter a VO ID above.</p>
-                <p className="mt-1 text-xs">
+            <div className="flex items-center justify-center flex-1 px-6 py-8">
+              <div className="max-w-lg w-full text-center space-y-5">
+                <div>
+                  <h2 className="text-xl font-bold text-teal-dark">VacNet: Vaccine-Gene Interaction Network</h2>
+                  <p className="text-gray-500 text-sm mt-2">
+                    Visualize how vaccines, genes, drugs, and diseases are connected through PubMed co-occurrence mining.
+                  </p>
+                </div>
+
+                {/* How to use */}
+                <div className="bg-teal-50 border border-teal-200 rounded-lg p-4 text-left">
+                  <h3 className="text-xs font-semibold text-teal-dark uppercase tracking-wide mb-3">How to use</h3>
+                  <ol className="space-y-2">
+                    <li className="flex items-start gap-2 text-sm text-gray-600">
+                      <span className="flex-shrink-0 w-5 h-5 bg-teal-dark text-white rounded-full text-xs flex items-center justify-center font-bold mt-0.5">1</span>
+                      <span>Select a vaccine from the VO tree on the left</span>
+                    </li>
+                    <li className="flex items-start gap-2 text-sm text-gray-600">
+                      <span className="flex-shrink-0 w-5 h-5 bg-teal-dark text-white rounded-full text-xs flex items-center justify-center font-bold mt-0.5">2</span>
+                      <span>Toggle gene-gene interactions and cross-entity edges</span>
+                    </li>
+                    <li className="flex items-start gap-2 text-sm text-gray-600">
+                      <span className="flex-shrink-0 w-5 h-5 bg-teal-dark text-white rounded-full text-xs flex items-center justify-center font-bold mt-0.5">3</span>
+                      <span>Click nodes to see details, scroll to zoom, drag to pan</span>
+                    </li>
+                  </ol>
+                </div>
+
+                {/* Example vaccines */}
+                <div>
+                  <p className="text-xs text-gray-500 mb-2 font-medium uppercase tracking-wide">Try an example</p>
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    <button
+                      onClick={() => handleTreeSelect('VO_0004908')}
+                      className="bg-accent hover:bg-amber-600 text-white font-medium px-4 py-2 rounded text-sm transition-colors"
+                    >
+                      COVID-19 vaccine
+                    </button>
+                    <button
+                      onClick={() => handleTreeSelect('VO_0000657')}
+                      className="bg-accent hover:bg-amber-600 text-white font-medium px-4 py-2 rounded text-sm transition-colors"
+                    >
+                      BCG vaccine
+                    </button>
+                    <button
+                      onClick={() => handleTreeSelect('VO_0000642')}
+                      className="bg-accent hover:bg-amber-600 text-white font-medium px-4 py-2 rounded text-sm transition-colors"
+                    >
+                      Influenza vaccine
+                    </button>
+                  </div>
+                </div>
+
+                <p className="text-xs text-gray-400">
                   Or browse from the{' '}
                   <Link to="/explore" className="text-teal-600 hover:underline">Explore</Link> page.
                 </p>

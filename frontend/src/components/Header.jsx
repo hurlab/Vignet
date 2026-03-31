@@ -3,13 +3,12 @@ import { Link, NavLink, useLocation } from 'react-router-dom'
 
 const navLinks = [
   { label: 'Explore', to: '/explore' },
-  { label: 'Vaccine', to: '/vaccine' },
   { label: 'VacNet', to: '/vacnet' },
   { label: 'VacPair', to: '/vacpair' },
   { label: 'Enrichment', to: '/enrichment' },
   { label: 'Compare', to: '/compare' },
   { label: 'VacSummarAI', to: '/vacsummarai' },
-  { label: 'VO Explorer', to: '/vo-explorer' },
+  { label: 'Ontology', to: '/vo-explorer' },
   { label: 'Assistant', to: '/assistant' },
   { label: 'Analyze', to: '/analyze' },
   { label: 'Report', to: '/report' },

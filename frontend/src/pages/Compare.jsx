@@ -262,7 +262,7 @@ export default function Compare() {
 
   function handleTryExample() {
     const exA = { vo_id: 'VO_0004908', name: 'COVID-19 vaccine' }
-    const exB = { vo_id: 'VO_0004809', name: 'influenza vaccine' }
+    const exB = { vo_id: 'VO_0000642', name: 'influenza virus vaccine' }
     setSelectedA(exA); setQueryA(exA.name); setShowA(false)
     setSelectedB(exB); setQueryB(exB.name); setShowB(false)
   }

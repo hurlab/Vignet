@@ -142,12 +142,27 @@ export default function VacSummarAI() {
         if (!r.ok) throw new Error(`HTTP ${r.status}`)
         return r.json()
       })
-      setSummary(result.summary ?? result.text ?? JSON.stringify(result))
+
+      // Extract summary text from nested response
+      const summaryText = result?.Summary?.reply
+        ?? result?.summary?.reply
+        ?? result?.summary
+        ?? result?.text
+        ?? (typeof result === 'string' ? result : '')
+      setSummary(summaryText || 'No summary generated.')
+
+      // Extract entities from correct path
+      const ents = result?.entities ?? {}
       setEntities({
-        genes: result.genes ?? [],
-        drugs: result.drugs ?? [],
-        diseases: result.diseases ?? [],
+        genes: ents.genes ?? [],
+        drugs: ents.drugs ?? [],
+        diseases: ents.diseases ?? [],
       })
+
+      // Store conversation history for chat follow-up
+      if (result?.Summary?.conversation_history) {
+        setChatMessages([])  // Reset chat for new summary
+      }
     } catch (err) {
       setError(err.message)
     } finally {
@@ -177,8 +192,17 @@ export default function VacSummarAI() {
         if (!r.ok) throw new Error(`HTTP ${r.status}`)
         return r.json()
       })
-      const assistantMsg = { role: 'assistant', content: result.response ?? result.message ?? JSON.stringify(result) }
-      setChatMessages((prev) => [...prev, assistantMsg])
+      const replyText = result?.Summary?.reply
+        ?? result?.response
+        ?? result?.message
+        ?? (typeof result === 'string' ? result : JSON.stringify(result))
+      const assistantMsg = { role: 'assistant', content: replyText }
+      // Update chat history from response if available, otherwise append locally
+      if (result?.Summary?.conversation_history) {
+        setChatMessages(result.Summary.conversation_history)
+      } else {
+        setChatMessages((prev) => [...prev, assistantMsg])
+      }
     } catch (err) {
       setChatMessages((prev) => [...prev, { role: 'assistant', content: `Error: ${err.message}` }])
     } finally {
@@ -364,24 +388,30 @@ export default function VacSummarAI() {
               {entities.genes?.length > 0 && (
                 <div className="flex flex-wrap gap-1.5">
                   <span className="text-xs text-gray-500 mr-1">Genes:</span>
-                  {entities.genes.map((g) => (
-                    <span key={g} className="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded">{g}</span>
+                  {entities.genes.map((e, i) => (
+                    <span key={i} className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded mr-1 mb-1">
+                      {e.term} ({e.count})
+                    </span>
                   ))}
                 </div>
               )}
               {entities.drugs?.length > 0 && (
                 <div className="flex flex-wrap gap-1.5">
                   <span className="text-xs text-gray-500 mr-1">Drugs:</span>
-                  {entities.drugs.map((d) => (
-                    <span key={d} className="bg-amber-100 text-amber-800 text-xs px-2 py-0.5 rounded">{d}</span>
+                  {entities.drugs.map((e, i) => (
+                    <span key={i} className="inline-block bg-amber-100 text-amber-800 text-xs px-2 py-0.5 rounded mr-1 mb-1">
+                      {e.term} ({e.count})
+                    </span>
                   ))}
                 </div>
               )}
               {entities.diseases?.length > 0 && (
                 <div className="flex flex-wrap gap-1.5">
                   <span className="text-xs text-gray-500 mr-1">Diseases:</span>
-                  {entities.diseases.map((d) => (
-                    <span key={d} className="bg-red-100 text-red-800 text-xs px-2 py-0.5 rounded">{d}</span>
+                  {entities.diseases.map((e, i) => (
+                    <span key={i} className="inline-block bg-red-100 text-red-800 text-xs px-2 py-0.5 rounded mr-1 mb-1">
+                      {e.term} ({e.count})
+                    </span>
                   ))}
                 </div>
               )}

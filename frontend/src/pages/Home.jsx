@@ -5,19 +5,13 @@ import { api } from '../api.js'
 const tools = [
   {
     title: 'Explore Vaccines',
-    description: 'Browse and search 600+ vaccines mined from PubMed literature with publication counts.',
+    description: 'Browse, search, and view profiles for 600+ vaccines mined from PubMed literature.',
     to: '/explore',
     icon: '\ud83c\udf10',
   },
   {
-    title: 'Vaccine Profile',
-    description: 'View a vaccine\'s linked genes, publication evidence, and interaction data.',
-    to: '/vaccine',
-    icon: '\ud83d\udc89',
-  },
-  {
     title: 'VacNet',
-    description: 'Interactive network visualization of vaccine-gene interaction clusters.',
+    description: 'Interactive network visualization of vaccine-gene-drug-disease interaction clusters.',
     to: '/vacnet',
     icon: '\ud83d\udd2c',
   },
@@ -34,20 +28,20 @@ const tools = [
     icon: '\ud83d\udcca',
   },
   {
-    title: 'Compare',
+    title: 'Compare Vaccines',
     description: 'Compare two vaccines side by side: shared genes, unique pathways.',
     to: '/compare',
     icon: '\u2696\ufe0f',
   },
   {
     title: 'VacSummarAI',
-    description: 'AI-powered summarization of vaccine-gene literature.',
+    description: 'AI-powered summarization of vaccine-gene literature with follow-up chat.',
     to: '/vacsummarai',
     icon: '\ud83e\udd16',
   },
   {
-    title: 'VO Explorer',
-    description: 'Browse the Vaccine Ontology hierarchy and terminology.',
+    title: 'VO Ontology',
+    description: 'Browse the Vaccine Ontology hierarchy tree and view vaccine details.',
     to: '/vo-explorer',
     icon: '\ud83d\udd16',
   },
@@ -59,13 +53,13 @@ const tools = [
   },
   {
     title: 'Analyze Text',
-    description: 'Paste biomedical text to detect vaccine-gene interactions.',
+    description: 'Paste biomedical text to detect genes and vaccine terms, predict interactions.',
     to: '/analyze',
     icon: '\ud83d\udcdd',
   },
   {
-    title: 'Analysis Report',
-    description: 'Generate downloadable reports summarizing vaccine interaction analysis.',
+    title: 'Generate Report',
+    description: 'Create downloadable HTML reports with vaccine associations and gene analysis.',
     to: '/report',
     icon: '\ud83d\udcc4',
   },
