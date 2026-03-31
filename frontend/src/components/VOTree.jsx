@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react'
 import { api } from '../api.js'
 
 // Renders a single tree node and its children recursively
-function TreeNode({ node, selectedIds, onSelect, multiSelect, expandedIds, onToggle }) {
+// connectors: array of booleans — true = draw vertical line at that depth level
+function TreeNode({ node, selectedIds, onSelect, multiSelect, expandedIds, onToggle, isLast = false, connectors = [] }) {
   const isExpanded = expandedIds.has(node.vo_id)
   const isSelected = selectedIds.includes(node.vo_id)
   const hasChildren = node.children && node.children.length > 0
   const isClickable = node.has_data
+  const depth = connectors.length
 
   function handleToggle(e) {
     e.stopPropagation()
@@ -21,14 +23,48 @@ function TreeNode({ node, selectedIds, onSelect, multiSelect, expandedIds, onTog
   return (
     <div>
       <div
-        className={`flex items-center gap-1 py-0.5 px-1 rounded group cursor-default select-none
+        className={`flex items-center py-px px-1 group cursor-default select-none
           ${isSelected ? 'bg-teal-100' : 'hover:bg-gray-100'}
         `}
-        style={{ paddingLeft: `${(node.level - 1) * 12 + 4}px` }}
       >
+        {/* Tree connector lines */}
+        {connectors.map((showLine, i) => (
+          <span
+            key={i}
+            className="flex-shrink-0 inline-block"
+            style={{ width: 16, height: 20, position: 'relative' }}
+          >
+            {showLine && (
+              <span
+                className="absolute left-[7px] top-0 bottom-0 border-l border-gray-300"
+                style={{ width: 0 }}
+              />
+            )}
+          </span>
+        ))}
+
+        {/* Current node connector: L-bend for last child, T-bend for others */}
+        {depth > 0 && (
+          <span
+            className="flex-shrink-0 inline-block"
+            style={{ width: 16, height: 20, position: 'relative' }}
+          >
+            {/* Vertical line — full height for non-last, half for last */}
+            <span
+              className="absolute left-[7px] top-0 border-l border-gray-300"
+              style={{ height: isLast ? 10 : 20, width: 0 }}
+            />
+            {/* Horizontal branch */}
+            <span
+              className="absolute top-[10px] left-[7px] border-t border-gray-300"
+              style={{ width: 8, height: 0 }}
+            />
+          </span>
+        )}
+
         {/* Expand/collapse arrow */}
         <button
-          className={`flex-shrink-0 w-4 h-4 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-transform
+          className={`flex-shrink-0 w-4 h-4 flex items-center justify-center text-gray-400 hover:text-gray-600
             ${hasChildren ? '' : 'invisible'}
           `}
           onClick={handleToggle}
@@ -58,7 +94,7 @@ function TreeNode({ node, selectedIds, onSelect, multiSelect, expandedIds, onTog
 
         {/* Node label */}
         <button
-          className={`flex-1 text-left text-xs leading-snug truncate
+          className={`flex-1 text-left text-xs leading-snug truncate ml-0.5
             ${isClickable
               ? isSelected
                 ? 'text-teal-800 font-semibold'
@@ -73,7 +109,7 @@ function TreeNode({ node, selectedIds, onSelect, multiSelect, expandedIds, onTog
           {node.name}
         </button>
 
-        {/* VO ID in small gray text */}
+        {/* VO ID on hover */}
         <span className="flex-shrink-0 text-[10px] text-gray-400 ml-1 hidden group-hover:inline">
           {node.vo_id.replace('VO_', '')}
         </span>
@@ -82,7 +118,7 @@ function TreeNode({ node, selectedIds, onSelect, multiSelect, expandedIds, onTog
       {/* Children */}
       {hasChildren && isExpanded && (
         <div>
-          {node.children.map((child) => (
+          {node.children.map((child, idx) => (
             <TreeNode
               key={child.vo_id}
               node={child}
@@ -91,6 +127,8 @@ function TreeNode({ node, selectedIds, onSelect, multiSelect, expandedIds, onTog
               multiSelect={multiSelect}
               expandedIds={expandedIds}
               onToggle={onToggle}
+              isLast={idx === node.children.length - 1}
+              connectors={[...connectors, !isLast]}
             />
           ))}
         </div>
@@ -99,16 +137,32 @@ function TreeNode({ node, selectedIds, onSelect, multiSelect, expandedIds, onTog
   )
 }
 
+// Recursively collect all vo_ids from the tree data
+function collectAllVoIds(nodes) {
+  const ids = []
+  function walk(nodeList) {
+    for (const node of nodeList) {
+      ids.push(node.vo_id)
+      if (node.children && node.children.length > 0) {
+        walk(node.children)
+      }
+    }
+  }
+  walk(nodes)
+  return ids
+}
+
 export default function VOTree({ onSelect, selectedIds = [], multiSelect = false }) {
   const [tree, setTree] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [expandedIds, setExpandedIds] = useState(new Set())
+  const [dataOnly, setDataOnly] = useState(true)
 
   useEffect(() => {
     setLoading(true)
     setError(null)
-    api.vaccineHierarchy()
+    api.vaccineHierarchy(10, dataOnly)
       .then((data) => {
         setTree(data.tree || [])
         // Expand level-1 nodes by default
@@ -117,7 +171,7 @@ export default function VOTree({ onSelect, selectedIds = [], multiSelect = false
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false))
-  }, [])
+  }, [dataOnly])
 
   function handleToggle(voId) {
     setExpandedIds((prev) => {
@@ -157,22 +211,47 @@ export default function VOTree({ onSelect, selectedIds = [], multiSelect = false
     )
   }
 
+  function handleExpandAll() {
+    setExpandedIds(new Set(collectAllVoIds(tree)))
+  }
+
   return (
-    <div
-      className="overflow-y-auto text-sm"
-      style={{ maxHeight: '100%' }}
-    >
-      {tree.map((node) => (
-        <TreeNode
-          key={node.vo_id}
-          node={node}
-          selectedIds={selectedIds}
-          onSelect={onSelect}
-          multiSelect={multiSelect}
-          expandedIds={expandedIds}
-          onToggle={handleToggle}
-        />
-      ))}
+    <div className="flex flex-col h-full">
+      {/* Tree controls */}
+      <div className="flex-shrink-0 px-2 py-1 border-b border-gray-100 flex items-center gap-3">
+        <button
+          onClick={handleExpandAll}
+          className="text-[10px] text-teal-600 hover:text-teal-800 hover:underline"
+        >
+          Expand All
+        </button>
+        <label className="flex items-center gap-1 text-[10px] text-gray-500 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={!dataOnly}
+            onChange={() => setDataOnly((v) => !v)}
+            className="w-3 h-3 accent-teal-600"
+          />
+          Show all VO terms
+        </label>
+      </div>
+      <div
+        className="flex-1 overflow-y-auto text-sm"
+      >
+        {tree.map((node, idx) => (
+          <TreeNode
+            key={node.vo_id}
+            node={node}
+            selectedIds={selectedIds}
+            onSelect={onSelect}
+            multiSelect={multiSelect}
+            expandedIds={expandedIds}
+            onToggle={handleToggle}
+            isLast={idx === tree.length - 1}
+            connectors={[]}
+          />
+        ))}
+      </div>
     </div>
   )
 }

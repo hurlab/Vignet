@@ -103,7 +103,7 @@ export default function Vaccine() {
                 View Network
               </Link>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mt-4">
               <div className="bg-teal-50 rounded p-3 text-center">
                 <div className="text-lg font-bold text-teal-dark">{profile.total_mentions?.toLocaleString()}</div>
                 <div className="text-xs text-gray-500">Mentions</div>
@@ -112,9 +112,17 @@ export default function Vaccine() {
                 <div className="text-lg font-bold text-teal-dark">{profile.pmid_count?.toLocaleString()}</div>
                 <div className="text-xs text-gray-500">PMIDs</div>
               </div>
-              <div className="bg-teal-50 rounded p-3 text-center">
-                <div className="text-lg font-bold text-teal-dark">{profile.top_genes?.length ?? 0}</div>
-                <div className="text-xs text-gray-500">Linked Genes</div>
+              <div className="bg-blue-50 rounded p-3 text-center">
+                <div className="text-lg font-bold text-blue-700">{profile.top_genes?.length ?? 0}</div>
+                <div className="text-xs text-gray-500">Genes</div>
+              </div>
+              <div className="bg-amber-50 rounded p-3 text-center">
+                <div className="text-lg font-bold text-amber-700">{profile.top_drugs?.length ?? 0}</div>
+                <div className="text-xs text-gray-500">Drugs</div>
+              </div>
+              <div className="bg-red-50 rounded p-3 text-center">
+                <div className="text-lg font-bold text-red-700">{profile.top_diseases?.length ?? 0}</div>
+                <div className="text-xs text-gray-500">Diseases</div>
               </div>
             </div>
           </div>
@@ -158,6 +166,62 @@ export default function Vaccine() {
           {profile.top_genes?.length === 0 && (
             <div className="bg-white border border-gray-200 rounded-lg p-6 text-center text-gray-400 text-sm">
               No gene associations found for this vaccine in the current database.
+            </div>
+          )}
+
+          {/* Top associated drugs */}
+          {profile.top_drugs?.length > 0 && (
+            <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+              <div className="px-4 py-3 border-b border-gray-200 bg-amber-50">
+                <h3 className="font-semibold text-amber-800 text-sm">Top Associated Drugs</h3>
+                <p className="text-xs text-gray-400 mt-0.5">Drugs co-mentioned with this vaccine in PubMed articles</p>
+              </div>
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-100">
+                    <th className="text-left px-4 py-2 font-medium text-gray-500 text-xs">Drug</th>
+                    <th className="text-left px-4 py-2 font-medium text-gray-500 text-xs">DrugBank ID</th>
+                    <th className="text-right px-4 py-2 font-medium text-gray-500 text-xs">Shared PMIDs</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {profile.top_drugs.map((d) => (
+                    <tr key={d.drugbank_id} className="border-b border-gray-50 hover:bg-amber-50/30">
+                      <td className="px-4 py-2 font-medium text-amber-800 capitalize">{d.drug_term}</td>
+                      <td className="px-4 py-2 text-gray-500 text-xs font-mono">{d.drugbank_id}</td>
+                      <td className="px-4 py-2 text-right text-gray-700">{d.shared_pmids?.toLocaleString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Top associated diseases */}
+          {profile.top_diseases?.length > 0 && (
+            <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+              <div className="px-4 py-3 border-b border-gray-200 bg-red-50">
+                <h3 className="font-semibold text-red-800 text-sm">Top Associated Diseases</h3>
+                <p className="text-xs text-gray-400 mt-0.5">Diseases co-mentioned with this vaccine in PubMed articles</p>
+              </div>
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-100">
+                    <th className="text-left px-4 py-2 font-medium text-gray-500 text-xs">Disease</th>
+                    <th className="text-left px-4 py-2 font-medium text-gray-500 text-xs">HDO ID</th>
+                    <th className="text-right px-4 py-2 font-medium text-gray-500 text-xs">Shared PMIDs</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {profile.top_diseases.map((d) => (
+                    <tr key={d.hdo_id} className="border-b border-gray-50 hover:bg-red-50/30">
+                      <td className="px-4 py-2 font-medium text-red-800 capitalize">{d.hdo_term}</td>
+                      <td className="px-4 py-2 text-gray-500 text-xs font-mono">{d.hdo_id}</td>
+                      <td className="px-4 py-2 text-right text-gray-700">{d.shared_pmids?.toLocaleString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </div>

@@ -46,10 +46,16 @@ export const api = {
     request(`/vaccine/${encodeURIComponent(voId)}/sentences?limit=${limit}&offset=${offset}`),
   vaccineNetwork: (voId) => request(`/vaccine/network/${encodeURIComponent(voId)}`),
   vaccineTopGenes: () => request('/vaccine/top-genes'),
-  vaccineHierarchy: (maxDepth = 10) => request(`/vaccine/hierarchy?max_depth=${maxDepth}`),
-  vaccineNetworkMulti: (voIds, geneGene = false) => {
+  vaccineHierarchy: (maxDepth = 10, dataOnly = true) => {
+    const params = new URLSearchParams({ max_depth: maxDepth })
+    if (dataOnly) params.set('data_only', 'true')
+    return request(`/vaccine/hierarchy?${params}`)
+  },
+  vaccineNetworkMulti: (voIds, geneGene = false, crossEntity = false, implicit = false) => {
     const params = new URLSearchParams({ vo_ids: voIds.join(',') })
     if (geneGene) params.set('gene_gene', 'true')
+    if (crossEntity) params.set('cross_entity', 'true')
+    if (implicit) params.set('implicit', 'true')
     return request(`/vaccine/network?${params}`)
   },
 }

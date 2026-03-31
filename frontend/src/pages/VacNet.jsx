@@ -16,7 +16,11 @@ export default function VacNet() {
 
   const [multiSelect, setMultiSelect] = useState(false)
   const [geneGene, setGeneGene] = useState(false)
+  const [crossEntity, setCrossEntity] = useState(false)
+  const [implicit, setImplicit] = useState(true)
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [sidebarWidth, setSidebarWidth] = useState(320)
+  const [vaccineName, setVaccineName] = useState(null)
 
   const [network, setNetwork] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -32,13 +36,17 @@ export default function VacNet() {
     setError(null)
     setSelectedNode(null)
 
-    const fetch = api.vaccineNetworkMulti(selectedVoIds, geneGene)
+    const fetch = api.vaccineNetworkMulti(selectedVoIds, geneGene, crossEntity, implicit)
 
     fetch
-      .then(setNetwork)
+      .then((net) => {
+        setNetwork(net)
+        const vaccNode = net.nodes.find((n) => n.type === 'vaccine')
+        setVaccineName(vaccNode?.label || null)
+      })
       .catch((err) => { setError(err.message); setNetwork(null) })
       .finally(() => setLoading(false))
-  }, [selectedVoIds, geneGene])
+  }, [selectedVoIds, geneGene, crossEntity, implicit])
 
   // Initialize / update Cytoscape
   useEffect(() => {
@@ -103,6 +111,34 @@ export default function VacNet() {
             },
           },
           {
+            selector: 'node[type="drug"]',
+            style: {
+              'background-color': '#f59e0b',
+              label: 'data(label)',
+              'font-size': '9px',
+              'text-valign': 'bottom',
+              'text-margin-y': 4,
+              width: 'mapData(weight, 1, 100, 16, 32)',
+              height: 'mapData(weight, 1, 100, 16, 32)',
+              shape: 'round-triangle',
+              color: '#92400e',
+            },
+          },
+          {
+            selector: 'node[type="disease"]',
+            style: {
+              'background-color': '#ef4444',
+              label: 'data(label)',
+              'font-size': '9px',
+              'text-valign': 'bottom',
+              'text-margin-y': 4,
+              width: 'mapData(weight, 1, 100, 16, 32)',
+              height: 'mapData(weight, 1, 100, 16, 32)',
+              shape: 'hexagon',
+              color: '#991b1b',
+            },
+          },
+          {
             selector: 'edge[type="vaccine-gene"]',
             style: {
               width: 'mapData(weight, 1, 100, 1, 5)',
@@ -112,10 +148,57 @@ export default function VacNet() {
             },
           },
           {
-            selector: 'edge[type="gene-gene"]',
+            selector: 'edge[type="vaccine-drug"]',
             style: {
               width: 'mapData(weight, 1, 100, 1, 4)',
               'line-color': '#f59e0b',
+              'curve-style': 'bezier',
+              opacity: 0.5,
+            },
+          },
+          {
+            selector: 'edge[type="vaccine-disease"]',
+            style: {
+              width: 'mapData(weight, 1, 100, 1, 4)',
+              'line-color': '#ef4444',
+              'curve-style': 'bezier',
+              opacity: 0.5,
+            },
+          },
+          {
+            selector: 'edge[type="gene-gene"]',
+            style: {
+              width: 'mapData(weight, 1, 100, 1, 4)',
+              'line-color': '#6b7280',
+              'curve-style': 'bezier',
+              'line-style': 'dashed',
+              opacity: 0.4,
+            },
+          },
+          {
+            selector: 'edge[type="drug-gene"]',
+            style: {
+              width: 'mapData(weight, 1, 100, 1, 4)',
+              'line-color': '#22c55e',
+              'curve-style': 'bezier',
+              'line-style': 'dashed',
+              opacity: 0.5,
+            },
+          },
+          {
+            selector: 'edge[type="drug-disease"]',
+            style: {
+              width: 'mapData(weight, 1, 100, 1, 4)',
+              'line-color': '#a855f7',
+              'curve-style': 'bezier',
+              opacity: 0.5,
+            },
+          },
+          {
+            selector: 'edge[type="disease-gene"]',
+            style: {
+              width: 'mapData(weight, 1, 100, 1, 4)',
+              'line-color': '#f97316',
               'curve-style': 'bezier',
               'line-style': 'dashed',
               opacity: 0.5,
@@ -252,7 +335,11 @@ export default function VacNet() {
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div>
             <h1 className="text-lg font-bold text-teal-dark leading-tight">VacNet</h1>
-            <p className="text-gray-500 text-xs">Interactive vaccine-gene interaction network</p>
+            {vaccineName ? (
+              <p className="text-teal-700 text-xs font-medium mt-0.5">{vaccineName}</p>
+            ) : (
+              <p className="text-gray-500 text-xs">Interactive vaccine-gene interaction network</p>
+            )}
           </div>
 
           {/* Multi-select toggle */}
@@ -314,11 +401,12 @@ export default function VacNet() {
           {sidebarOpen ? '◀' : '▶'}
         </button>
 
-        {/* VO Tree Sidebar */}
+        {/* VO Tree Sidebar — resizable */}
         <div
-          className={`flex-shrink-0 border-r border-gray-200 bg-gray-50 flex flex-col overflow-hidden transition-all
-            ${sidebarOpen ? 'w-72' : 'w-0'}
+          className={`flex-shrink-0 border-r border-gray-200 bg-gray-50 flex flex-col overflow-hidden
+            ${sidebarOpen ? '' : 'w-0'}
           `}
+          style={sidebarOpen ? { width: sidebarWidth, minWidth: 200, maxWidth: 600 } : {}}
         >
           {sidebarOpen && (
             <>
@@ -342,6 +430,23 @@ export default function VacNet() {
             </>
           )}
         </div>
+
+        {/* Resize handle */}
+        {sidebarOpen && (
+          <div
+            className="flex-shrink-0 w-1.5 cursor-col-resize bg-transparent hover:bg-teal-300 active:bg-teal-400 transition-colors"
+            onMouseDown={(e) => {
+              e.preventDefault()
+              const startX = e.clientX
+              const startW = sidebarWidth
+              const onMove = (ev) => setSidebarWidth(Math.max(200, Math.min(600, startW + ev.clientX - startX)))
+              const onUp = () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp) }
+              document.addEventListener('mousemove', onMove)
+              document.addEventListener('mouseup', onUp)
+            }}
+            title="Drag to resize"
+          />
+        )}
 
         {/* Expand sidebar button when collapsed (desktop) */}
         {!sidebarOpen && (
@@ -385,9 +490,9 @@ export default function VacNet() {
               {network.edges.length === 0 ? (
                 <div className="flex items-center justify-center flex-1 px-8">
                   <div className="bg-white border border-gray-200 rounded-lg p-8 text-center text-gray-400 text-sm max-w-sm">
-                    No gene associations found for this vaccine.
+                    No associations found for this vaccine.
                     <p className="mt-2 text-xs">
-                      This vaccine has no gene co-occurrence data yet.
+                      This vaccine has no co-occurrence data with genes, drugs, or diseases yet.
                     </p>
                   </div>
                 </div>
@@ -398,7 +503,12 @@ export default function VacNet() {
                     <p className="text-xs text-gray-500">
                       {network.nodes.length} nodes &middot; {network.edges.length} edges
                     </p>
-                    <p className="text-xs text-gray-400">Scroll to zoom &middot; drag to pan &middot; click for details</p>
+                    <div className="flex items-center gap-3 text-xs text-gray-400">
+                      <span className="flex items-center gap-1"><span className="inline-block w-2.5 h-2.5 bg-teal-600 rotate-45"></span>Vaccine</span>
+                      <span className="flex items-center gap-1"><span className="inline-block w-2.5 h-2.5 bg-blue-500 rounded-full"></span>Gene</span>
+                      <span className="flex items-center gap-1"><span className="inline-block w-2.5 h-2.5 bg-amber-500" style={{clipPath:'polygon(50% 0%,100% 100%,0% 100%)'}}></span>Drug</span>
+                      <span className="flex items-center gap-1"><span className="inline-block w-2.5 h-2.5 bg-red-500" style={{clipPath:'polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%)'}}></span>Disease</span>
+                    </div>
                   </div>
 
                   {/* Cytoscape container */}
@@ -410,7 +520,7 @@ export default function VacNet() {
                       <div className="absolute top-3 right-3 bg-white border border-gray-300 rounded-lg shadow-md p-3 max-w-xs z-10">
                         <h4 className="font-semibold text-teal-dark text-sm capitalize">{selectedNode.label}</h4>
                         <p className="text-xs text-gray-500 mt-0.5">
-                          Type: {selectedNode.type === 'vaccine' ? 'Vaccine' : 'Gene'}
+                          Type: {selectedNode.type === 'vaccine' ? 'Vaccine' : selectedNode.type === 'gene' ? 'Gene' : selectedNode.type === 'drug' ? 'Drug' : selectedNode.type === 'disease' ? 'Disease' : selectedNode.type}
                         </p>
                         {selectedNode.type === 'gene' && (
                           <a
@@ -445,22 +555,71 @@ export default function VacNet() {
                       Show gene-gene interactions
                     </label>
 
+                    {/* Cross-entity toggle */}
+                    <label className="flex items-center gap-2 cursor-pointer text-xs text-gray-600 select-none">
+                      <input
+                        type="checkbox"
+                        checked={crossEntity}
+                        onChange={(e) => setCrossEntity(e.target.checked)}
+                        className="w-3.5 h-3.5 accent-green-500"
+                      />
+                      Show cross-entity interactions
+                    </label>
+
+                    {/* Implicit (child vaccine) toggle */}
+                    <label className="flex items-center gap-2 cursor-pointer text-xs text-gray-600 select-none">
+                      <input
+                        type="checkbox"
+                        checked={implicit}
+                        onChange={(e) => setImplicit(e.target.checked)}
+                        className="w-3.5 h-3.5 accent-teal-500"
+                      />
+                      Include child vaccine associations (implicit)
+                    </label>
+
                     <span className="h-4 w-px bg-gray-200" />
 
                     {/* Legend */}
-                    <div className="flex items-center gap-4 text-xs text-gray-500">
+                    <div className="flex items-center gap-3 flex-wrap text-xs text-gray-500">
                       <span className="flex items-center gap-1.5">
                         <span className="w-3 h-3 bg-teal-600 rotate-45 inline-block" /> Vaccine
                       </span>
                       <span className="flex items-center gap-1.5">
                         <span className="w-3 h-3 bg-blue-500 rounded-full inline-block" /> Gene
                       </span>
+                      {crossEntity && (
+                        <>
+                          <span className="flex items-center gap-1.5">
+                            <span className="w-3 h-3 bg-amber-500 inline-block" style={{clipPath:'polygon(50% 0%,100% 100%,0% 100%)'}} /> Drug
+                          </span>
+                          <span className="flex items-center gap-1.5">
+                            <span className="w-3 h-3 bg-red-500 inline-block" style={{clipPath:'polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%)'}} /> Disease
+                          </span>
+                        </>
+                      )}
                       <span className="flex items-center gap-1.5">
-                        <span className="w-6 h-0.5 bg-gray-400 inline-block" /> V-G edge
+                        <span className="w-6 h-0.5 bg-gray-400 inline-block" /> V-G
                       </span>
+                      {crossEntity && (
+                        <>
+                          <span className="flex items-center gap-1.5">
+                            <span className="w-6 h-0.5 bg-amber-400 inline-block" /> V-Drug
+                          </span>
+                          <span className="flex items-center gap-1.5">
+                            <span className="w-6 h-0.5 bg-red-400 inline-block" /> V-Disease
+                          </span>
+                          <span className="flex items-center gap-1.5 opacity-70" style={{borderTop:'2px dashed #22c55e',width:'1.5rem'}} />
+                          <span className="text-green-600 -ml-2">Drug-Gene</span>
+                          <span className="flex items-center gap-1.5">
+                            <span className="w-6 h-0.5 bg-purple-500 inline-block" /> Drug-Disease
+                          </span>
+                          <span className="flex items-center gap-1.5 opacity-70" style={{borderTop:'2px dashed #f97316',width:'1.5rem'}} />
+                          <span className="text-orange-500 -ml-2">Disease-Gene</span>
+                        </>
+                      )}
                       {geneGene && (
                         <span className="flex items-center gap-1.5">
-                          <span className="w-6 h-0.5 bg-amber-400 inline-block border-dashed border-t border-amber-400" /> G-G edge
+                          <span className="w-6 h-0.5 bg-amber-400 inline-block border-dashed border-t border-amber-400" /> G-G
                         </span>
                       )}
                     </div>
