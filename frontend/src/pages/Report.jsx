@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { api } from '../api.js'
 import LoadingSpinner from '../components/LoadingSpinner.jsx'
 
 const EXAMPLE_GENES = 'ACE2\nTMPRSS2\nIL6\nTNF\nIFNG\nCD4\nCD8A\nNLRP3\nIL1B\nIL2'
@@ -62,13 +63,7 @@ export default function Report() {
 
     // Phase 1: vaccine enrichment
     try {
-      const res = await fetch('/api/v1/vaccine/enrichment', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ genes }),
-      })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      results.vaccineAssoc = await res.json()
+      results.vaccineAssoc = await api.vaccineEnrichment(genes)
     } catch (e) {
       results.vaccineAssocError = e.message
     }
@@ -77,13 +72,7 @@ export default function Report() {
 
     // Phase 2: gene interaction enrichment
     try {
-      const res = await fetch('/api/v1/enrichment/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ genes }),
-      })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      results.enrichment = await res.json()
+      results.enrichment = await api.enrichment(genes)
     } catch (e) {
       results.enrichmentError = e.message
     }
@@ -92,14 +81,8 @@ export default function Report() {
 
     // Phase 3: AI summary
     try {
-      const res = await fetch('/api/v1/summarize', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ genes }),
-      })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const data = await res.json()
-      results.summary = data.summary ?? data.text ?? null
+      const data = await api.summarize({ genes })
+      results.summary = data?.Summary?.reply ?? data?.summary?.reply ?? data?.summary ?? null
     } catch (e) {
       results.summaryError = e.message
     }
@@ -123,8 +106,8 @@ export default function Report() {
           <tr>
             <td>${v.name ?? v.vaccine_name ?? v.vo_id ?? 'N/A'}</td>
             <td>${v.vo_id ?? ''}</td>
-            <td>${v.overlap ?? v.overlap_count ?? v.count ?? 'N/A'}</td>
-            <td>${v.pmid_count ?? v.shared_pmids ?? 'N/A'}</td>
+            <td>${v.gene_overlap ?? v.overlap ?? v.count ?? 'N/A'}</td>
+            <td>${v.total_evidence ?? v.pmid_count ?? v.shared_pmids ?? 'N/A'}</td>
           </tr>`).join('')
         vaccineSection = `
           <table>
@@ -136,17 +119,17 @@ export default function Report() {
 
     let interactionSection = '<p style="color:#888;font-size:13px;">Interaction analysis data not available.</p>'
     if (data.enrichment) {
-      const pairs = data.enrichment.pairs ?? data.enrichment.interactions ?? []
-      const coverage = data.enrichment.coverage ?? null
+      const pairs = data.enrichment.interactions ?? data.enrichment.pairs ?? []
+      const coverage = data.enrichment.coverage_pct ?? (data.enrichment.coverage != null ? data.enrichment.coverage * 100 : null)
       if (coverage != null) {
-        interactionSection += `<p style="font-size:13px;">Gene coverage: <strong>${(coverage * 100).toFixed(0)}%</strong></p>`
+        interactionSection += `<p style="font-size:13px;">Gene coverage: <strong>${coverage.toFixed(0)}%</strong></p>`
       }
       if (pairs.length > 0) {
         const rows = pairs.slice(0, 20).map((p) => `
           <tr>
             <td>${p.gene1 ?? p.Gene1 ?? 'N/A'}</td>
             <td>${p.gene2 ?? p.Gene2 ?? 'N/A'}</td>
-            <td>${p.score != null ? (p.score * 100).toFixed(0) + '%' : p.count ?? 'N/A'}</td>
+            <td>${p.max_score != null ? (p.max_score * 100).toFixed(0) + '%' : p.evidence_count ?? p.count ?? 'N/A'}</td>
           </tr>`).join('')
         interactionSection = `
           <table>
@@ -334,10 +317,10 @@ export default function Report() {
                                 </td>
                                 <td className="px-3 py-2 text-gray-500 text-xs font-mono">{v.vo_id ?? ''}</td>
                                 <td className="px-3 py-2 text-right text-gray-700">
-                                  {v.overlap ?? v.overlap_count ?? v.count ?? 'N/A'}
+                                  {v.gene_overlap ?? v.overlap ?? v.count ?? 'N/A'}
                                 </td>
                                 <td className="px-3 py-2 text-right text-gray-700">
-                                  {v.pmid_count ?? v.shared_pmids ?? 'N/A'}
+                                  {v.total_evidence ?? v.pmid_count ?? v.shared_pmids ?? 'N/A'}
                                 </td>
                               </tr>
                             ))}
@@ -361,8 +344,10 @@ export default function Report() {
                 <h3 className="font-semibold text-teal-dark text-sm mb-2">Gene Interaction Analysis</h3>
                 {reportData.enrichment ? (
                   (() => {
-                    const pairs = reportData.enrichment.pairs ?? reportData.enrichment.interactions ?? []
-                    const coverage = reportData.enrichment.coverage ?? null
+                    const pairs = reportData.enrichment.interactions ?? reportData.enrichment.pairs ?? []
+                    const coverage = reportData.enrichment.coverage_pct != null
+                      ? reportData.enrichment.coverage_pct / 100
+                      : reportData.enrichment.coverage ?? null
                     return (
                       <div className="space-y-2">
                         {coverage != null && (
@@ -386,7 +371,9 @@ export default function Report() {
                                     <td className="px-3 py-2 font-medium text-blue-700">{p.gene1 ?? p.Gene1}</td>
                                     <td className="px-3 py-2 font-medium text-amber-700">{p.gene2 ?? p.Gene2}</td>
                                     <td className="px-3 py-2 text-right text-gray-700">
-                                      {p.score != null ? `${(p.score * 100).toFixed(0)}%` : p.count ?? 'N/A'}
+                                      {p.max_score != null ? `${(p.max_score * 100).toFixed(0)}%`
+                                        : p.score != null ? `${(p.score * 100).toFixed(0)}%`
+                                        : p.evidence_count ?? p.count ?? 'N/A'}
                                     </td>
                                   </tr>
                                 ))}
