@@ -11,6 +11,14 @@ const Vaccine = lazy(() => import('./pages/Vaccine.jsx'))
 const VacNet = lazy(() => import('./pages/VacNet.jsx'))
 const About = lazy(() => import('./pages/About.jsx'))
 const Faqs = lazy(() => import('./pages/Faqs.jsx'))
+const VacPair = lazy(() => import('./pages/VacPair.jsx'))
+const Enrichment = lazy(() => import('./pages/Enrichment.jsx'))
+const Compare = lazy(() => import('./pages/Compare.jsx'))
+const VOExplorer = lazy(() => import('./pages/VOExplorer.jsx'))
+const VacSummarAI = lazy(() => import('./pages/VacSummarAI.jsx'))
+const VaccineAssistant = lazy(() => import('./pages/VaccineAssistant.jsx'))
+const AnalyzeText = lazy(() => import('./pages/AnalyzeText.jsx'))
+const Report = lazy(() => import('./pages/Report.jsx'))
 
 function usePageTracking() {
   const location = useLocation()
@@ -37,6 +45,14 @@ function App() {
             <Route path="vacnet" element={<VacNet />} />
             <Route path="about" element={<About />} />
             <Route path="faqs" element={<Faqs />} />
+            <Route path="vacpair" element={<VacPair />} />
+            <Route path="enrichment" element={<Enrichment />} />
+            <Route path="compare" element={<Compare />} />
+            <Route path="vo-explorer" element={<VOExplorer />} />
+            <Route path="vacsummarai" element={<VacSummarAI />} />
+            <Route path="assistant" element={<VaccineAssistant />} />
+            <Route path="analyze" element={<AnalyzeText />} />
+            <Route path="report" element={<Report />} />
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../api.js'
 
-const activeTools = [
+const tools = [
   {
     title: 'Explore Vaccines',
     description: 'Browse and search 600+ vaccines mined from PubMed literature with publication counts.',
@@ -21,47 +21,52 @@ const activeTools = [
     to: '/vacnet',
     icon: '\ud83d\udd2c',
   },
-]
-
-const comingSoonTools = [
   {
     title: 'VacPair',
     description: 'Query a vaccine-gene pair to see co-occurrence evidence and prediction scores.',
+    to: '/vacpair',
     icon: '\ud83d\udd17',
   },
   {
     title: 'Enrichment',
     description: 'Input a gene list to discover which vaccines are associated.',
+    to: '/enrichment',
     icon: '\ud83d\udcca',
   },
   {
     title: 'Compare',
     description: 'Compare two vaccines side by side: shared genes, unique pathways.',
+    to: '/compare',
     icon: '\u2696\ufe0f',
   },
   {
     title: 'VacSummarAI',
     description: 'AI-powered summarization of vaccine-gene literature.',
+    to: '/vacsummarai',
     icon: '\ud83e\udd16',
   },
   {
     title: 'VO Explorer',
     description: 'Browse the Vaccine Ontology hierarchy and terminology.',
+    to: '/vo-explorer',
     icon: '\ud83d\udd16',
   },
   {
     title: 'Vaccine Assistant',
     description: 'Ask questions about vaccine-gene interactions grounded in PubMed evidence.',
+    to: '/assistant',
     icon: '\ud83d\udcac',
   },
   {
     title: 'Analyze Text',
     description: 'Paste biomedical text to detect vaccine-gene interactions.',
+    to: '/analyze',
     icon: '\ud83d\udcdd',
   },
   {
     title: 'Analysis Report',
     description: 'Generate downloadable reports summarizing vaccine interaction analysis.',
+    to: '/report',
     icon: '\ud83d\udcc4',
   },
 ]
@@ -131,11 +136,11 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Active tools */}
+      {/* All tools */}
       <section>
-        <h2 className="text-base font-semibold text-gray-700 mb-3">Available Tools</h2>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-          {activeTools.map(({ title, description, to, icon }) => (
+        <h2 className="text-base font-semibold text-gray-700 mb-3">Tools</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {tools.map(({ title, description, to, icon }) => (
             <Link
               key={to}
               to={to}
@@ -151,21 +156,19 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Coming soon tools */}
+      {/* MCP */}
       <section>
-        <h2 className="text-base font-semibold text-gray-700 mb-3">Coming Soon</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
-          {comingSoonTools.map(({ title, description, icon }) => (
-            <div
-              key={title}
-              className="bg-white/60 border border-gray-200 rounded-lg px-3 py-2 opacity-50 cursor-not-allowed flex items-center gap-2"
-            >
-              <span className="text-base grayscale flex-shrink-0">{icon}</span>
-              <span className="text-gray-500 text-xs font-medium truncate">{title}</span>
-              <span className="text-[9px] text-teal-600 bg-teal-50 px-1.5 py-0.5 rounded flex-shrink-0">Soon</span>
-            </div>
-          ))}
-        </div>
+        <h2 className="text-base font-semibold text-gray-700 mb-3">For AI Agents</h2>
+        <a
+          href="/ignet/api-docs"
+          className="flex items-center gap-4 bg-white border border-gray-200 rounded-lg p-4 hover:border-teal-400 hover:shadow-md transition-all group"
+        >
+          <div className="text-2xl flex-shrink-0">&#129302;</div>
+          <div>
+            <h3 className="font-semibold text-teal-dark group-hover:text-teal text-sm mb-0.5">MCP Endpoint</h3>
+            <p className="text-gray-500 text-xs leading-relaxed">Connect AI assistants to Vignet data via the Model Context Protocol at <code className="bg-gray-100 px-1 rounded">https://ignet.org/api/v1/mcp</code></p>
+          </div>
+        </a>
       </section>
 
       {/* Sister site */}
