@@ -1,0 +1,32 @@
+# === Dependencies ===
+node_modules/
+
+# === Build output ===
+dist-react/
+
+# === Development tools (local only) ===
+.claude/
+.moai/
+.moai-backups/
+
+# === Environment & Secrets ===
+.env
+.env.*
+*.env
+
+# === OS & Editor ===
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+
+# === Logs ===
+*.log
+nohup.out
+
+# === Project management (local only) ===
+PROJECT_HANDOFF.md
+PROJECT_LOG.md
