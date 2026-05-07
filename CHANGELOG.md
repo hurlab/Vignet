@@ -2,6 +2,17 @@
 
 All notable changes to the Vignet platform are documented here.
 
+## [Unreleased]
+
+### 2026-05-06 — Temporary mitigation: hurlab.med.und.edu HTTPS → HTTP
+
+Outbound links from About and Contact pages downgraded from
+`https://hurlab.med.und.edu` to `http://hurlab.med.und.edu` while TLS on the
+hurlab server is offline. **To be reverted once TLS is restored.** Full audit
+log and revert procedure: [`TEMP_HTTPS_DOWNGRADE.md`](TEMP_HTTPS_DOWNGRADE.md).
+
+The Ignet sister repo received the same mitigation in the same session.
+
 ## [1.0.1] — 2026-04-05
 
 ### Fixes

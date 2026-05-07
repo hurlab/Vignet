@@ -4,7 +4,7 @@ const labs = [
     pi: 'Dr. Junguk Hur',
     description:
       'Systems biology, network medicine, and vaccine informatics. Lead development team for Vignet.',
-    url: 'https://hurlab.med.und.edu',
+    url: 'http://hurlab.med.und.edu',
   },
 ]
 
