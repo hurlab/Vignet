@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../api.js'
+import useDataLastUpdated from '../hooks/useDataLastUpdated'
 
 const tools = [
   {
@@ -83,6 +84,8 @@ function StatCard({ label, value, loading }) {
 export default function Home() {
   const [stats, setStats] = useState(null)
   const [statsLoading, setStatsLoading] = useState(true)
+  const { monthYear } = useDataLastUpdated()
+  const dataThrough = monthYear || '2026'
 
   useEffect(() => {
     api.vaccineStats()
@@ -121,7 +124,7 @@ export default function Home() {
       {/* Live stats */}
       <section>
         <h2 className="text-base font-semibold text-gray-700 mb-0">Database Statistics</h2>
-        <p className="text-xs text-gray-400 mt-0.5 mb-3">Based on PubMed literature through 2025</p>
+        <p className="text-xs text-gray-400 mt-0.5 mb-3">Based on PubMed literature through {dataThrough}</p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <StatCard label="Vaccines (VO)" value={stats?.total_vaccines} loading={statsLoading} />
           <StatCard label="Linked Genes" value={stats?.total_genes} loading={statsLoading} />

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { api } from '../api.js'
 import LoadingSpinner from '../components/LoadingSpinner.jsx'
+import useDataLastUpdated from '../hooks/useDataLastUpdated'
 
 const EXAMPLE_GENES = 'ACE2\nTMPRSS2\nIL6\nTNF\nIFNG\nCD4\nCD8A\nNLRP3\nIL1B\nIL2'
 
@@ -45,6 +46,8 @@ export default function Report() {
   const [phases, setPhases] = useState([]) // { label, done, error }
   const [reportData, setReportData] = useState(null)
   const [error, setError] = useState(null)
+  const { monthYear } = useDataLastUpdated()
+  const dataThrough = monthYear || '2026'
 
   function loadExample() {
     setGeneText(EXAMPLE_GENES)
@@ -187,7 +190,7 @@ export default function Report() {
     Vaccine associations are derived from co-occurrence mining of PubMed biomedical abstracts using
     the Vaccine Ontology (VO). Gene interaction predictions use BioBERT-based NLP models trained on
     curated biomedical sentence pairs. AI summaries are generated using large language models grounded
-    in PubMed literature. Data reflects PubMed coverage through 2025.
+    in PubMed literature. Data reflects PubMed coverage through ${escapeHtml(dataThrough)}.
   </p>
   <div class="footer">
     <p>Vignet &mdash; Vaccine-focused Integrative Gene Network | University of North Dakota / University of Michigan</p>
@@ -424,7 +427,7 @@ export default function Report() {
                   Vaccine associations are derived from co-occurrence mining of PubMed biomedical abstracts
                   using the Vaccine Ontology (VO). Gene interaction predictions use BioBERT-based NLP models
                   trained on curated biomedical sentence pairs. AI summaries are generated using large language
-                  models grounded in PubMed literature. Data reflects PubMed coverage through 2025.
+                  models grounded in PubMed literature. Data reflects PubMed coverage through {dataThrough}.
                 </p>
               </section>
             </div>

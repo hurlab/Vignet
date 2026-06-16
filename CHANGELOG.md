@@ -4,12 +4,22 @@ All notable changes to the Vignet platform are documented here.
 
 ## [Unreleased]
 
+### 2026-05-28 — Revert hurlab.med.und.edu HTTPS downgrade
+
+TLS on `hurlab.med.und.edu` is restored (UND wildcard `*.med.und.edu`,
+GlobalSign, valid through 2026-10-10). Reverted the 2026-05-06 mitigation:
+outbound links in About and Contact pages restored from
+`http://hurlab.med.und.edu` to `https://hurlab.med.und.edu`. Applied to both
+React source (`frontend/src/pages/About.jsx`, `Contact.jsx`) and the
+currently-served compiled bundles in `dist-react/assets/`. The Ignet sister
+repo received the same revert in the same session. `TEMP_HTTPS_DOWNGRADE.md`
+removed.
+
 ### 2026-05-06 — Temporary mitigation: hurlab.med.und.edu HTTPS → HTTP
 
 Outbound links from About and Contact pages downgraded from
 `https://hurlab.med.und.edu` to `http://hurlab.med.und.edu` while TLS on the
-hurlab server is offline. **To be reverted once TLS is restored.** Full audit
-log and revert procedure: [`TEMP_HTTPS_DOWNGRADE.md`](TEMP_HTTPS_DOWNGRADE.md).
+hurlab server is offline. **Reverted 2026-05-28** (see entry above).
 
 The Ignet sister repo received the same mitigation in the same session.
 

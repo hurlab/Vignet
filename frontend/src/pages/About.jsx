@@ -70,7 +70,7 @@ export default function About() {
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-lg mx-auto">
           <a
-            href="http://hurlab.med.und.edu"
+            href="https://hurlab.med.und.edu"
             target="_blank"
             rel="noopener noreferrer"
             className="flex flex-col items-center text-center p-3 rounded-lg hover:bg-gray-50 transition-colors group"
