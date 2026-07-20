@@ -332,7 +332,9 @@ export default function VacNet() {
     })
   }
 
-  const hasSelection = selectedVoIds.length > 0
+  // A PMID-cohort network is a selection too, otherwise the VO empty state
+  // ("Select a vaccine from the VO tree") renders on top of a built cohort graph.
+  const hasSelection = selectedVoIds.length > 0 || (inputMode === 'pmids' && !!network)
 
   // Parse a pasted/uploaded PMID list: any non-digit run is a separator.
   const parsePmids = (text) => {
