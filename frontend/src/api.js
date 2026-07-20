@@ -110,4 +110,14 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ question, conversation_history: conversationHistory }),
     }),
+
+  // PMID-cohort networks. Vignet and Ignet share one API, so these are the
+  // same endpoints Ignet's Dignet uses: register a PMID list to get a query
+  // id, then read that cohort's gene<->ontology co-occurrence network.
+  dignetSearchPmids: (pmids) =>
+    request('/dignet/search-pmids', {
+      method: 'POST',
+      body: JSON.stringify({ pmids }),
+    }),
+  dignetEntityNetwork: (queryId) => request(`/dignet/${queryId}/entity-network`),
 }

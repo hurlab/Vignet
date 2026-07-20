@@ -22,6 +22,12 @@ export default function VacNet() {
   const [sidebarWidth, setSidebarWidth] = useState(320)
   const [vaccineName, setVaccineName] = useState(null)
 
+  // PMID-cohort mode: build a vaccine<->gene network from an uploaded PMID
+  // list instead of a VO selection. Uses the shared Ignet API endpoints.
+  const [inputMode, setInputMode] = useState('vo') // 'vo' | 'pmids'
+  const [pmidText, setPmidText] = useState('')
+  const [cohortInfo, setCohortInfo] = useState(null)
+
   const [network, setNetwork] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -328,6 +334,84 @@ export default function VacNet() {
 
   const hasSelection = selectedVoIds.length > 0
 
+  // Parse a pasted/uploaded PMID list: any non-digit run is a separator.
+  const parsePmids = (text) => {
+    const seen = new Set()
+    for (const tok of String(text || '').split(/[^0-9]+/)) {
+      if (tok && /^[0-9]{1,8}$/.test(tok)) seen.add(Number(tok))
+    }
+    return [...seen]
+  }
+
+  // Convert the shared entity-network payload into VacNet's {nodes, edges}
+  // shape so the existing cytoscape renderer is reused unchanged.
+  // The API returns disease and drug edges only. Vaccine<->gene edges are NOT
+  // available per-cohort: measured on the corpus, the VO-annotated papers and
+  // the gene-annotated papers are near-disjoint (of 3,000 t_vo PMIDs sampled,
+  // 22 are in t_biosummary), so such a join renders empty. Corpus-wide
+  // vaccine<->gene links remain available through the VO mode of this page.
+  const cohortToNetwork = (payload) => {
+    const edges = (payload?.edges || []).filter(
+      (e) => e.kind === 'disease' || e.kind === 'drug'
+    )
+    const nodes = []
+    const seen = new Set()
+    edges.forEach((e) => {
+      const termId = `${e.kind}:${e.term}`
+      if (!seen.has(termId)) {
+        seen.add(termId)
+        nodes.push({ id: termId, label: e.term, type: e.kind })
+      }
+      if (!seen.has(e.gene)) {
+        seen.add(e.gene)
+        nodes.push({ id: e.gene, label: e.gene, type: 'gene' })
+      }
+    })
+    return {
+      nodes,
+      edges: edges.map((e) => ({
+        source: `${e.kind}:${e.term}`,
+        target: e.gene,
+        weight: e.papers,
+        type: `${e.kind}-gene`,
+      })),
+    }
+  }
+
+  const handlePmidSubmit = async (e) => {
+    e.preventDefault()
+    const pmids = parsePmids(pmidText)
+    if (pmids.length === 0) {
+      setError('Enter at least one PMID.')
+      return
+    }
+    setLoading(true)
+    setError(null)
+    setSelectedNode(null)
+    setVaccineName(null)
+    setCohortInfo(null)
+    try {
+      const raw = await api.dignetSearchPmids(pmids)
+      // The API nests the payload under `data`; tolerate both shapes.
+      const q = raw?.data ?? raw
+      const payload = await api.dignetEntityNetwork(q.query_id)
+      const net = cohortToNetwork(payload)
+      setNetwork(net)
+      setCohortInfo({
+        submitted: pmids.length,
+        matched: q.pmid_count_in_db ?? null,
+        annotated: payload.papers_with_entities ?? 0,
+        terms: net.nodes.filter((n) => n.type !== 'gene').length,
+        genes: net.nodes.filter((n) => n.type === 'gene').length,
+      })
+    } catch (err) {
+      setError(err.message)
+      setNetwork(null)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className="flex flex-col h-[calc(100vh-3.5rem)]">
       {/* Top bar */}
@@ -372,8 +456,74 @@ export default function VacNet() {
           </button>
         </div>
 
+        {/* Input mode switch */}
+        <div className="flex gap-1 mb-2" role="tablist" aria-label="Network input mode">
+          {[['vo', 'By vaccine (VO)'], ['pmids', 'By PMID list']].map(([m, label]) => (
+            <button
+              key={m}
+              role="tab"
+              aria-selected={inputMode === m}
+              onClick={() => setInputMode(m)}
+              className={`text-xs px-2 py-1 rounded transition-colors ${
+                inputMode === m
+                  ? 'bg-teal-dark text-white font-semibold'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {inputMode === 'pmids' && (
+          <form onSubmit={handlePmidSubmit} className="max-w-xl">
+            <label htmlFor="vacnet-pmids" className="block text-xs text-gray-600 mb-1">
+              Paste PubMed IDs to see which diseases and drugs link to which genes
+              across those papers, counted per paper — so papers naming only one gene
+              still contribute. For vaccine-gene links, use the &quot;By vaccine (VO)&quot; mode.
+            </label>
+            <textarea
+              id="vacnet-pmids"
+              value={pmidText}
+              onChange={(e) => setPmidText(e.target.value)}
+              rows={3}
+              placeholder="12345678, 23456789, 34567890"
+              className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-teal-500"
+            />
+            <div className="flex items-center gap-2 mt-1">
+              <button
+                type="submit"
+                className="bg-teal-dark hover:bg-teal text-white font-semibold px-3 py-1.5 rounded text-sm transition-colors"
+              >
+                Build network
+              </button>
+              <input
+                type="file"
+                accept=".txt,.csv,.tsv"
+                aria-label="Upload a PMID list file"
+                onChange={(ev) => {
+                  const f = ev.target.files?.[0]
+                  if (!f) return
+                  const r = new FileReader()
+                  r.onload = () => setPmidText(String(r.result || ''))
+                  r.readAsText(f)
+                }}
+                className="text-xs text-gray-500"
+              />
+              {cohortInfo && (
+                <span className="text-xs text-gray-500">
+                  {cohortInfo.submitted} PMIDs
+                  {cohortInfo.matched != null ? ` (${cohortInfo.matched} in corpus)` : ''}
+                  {' '}-&gt; {cohortInfo.annotated} annotated papers,
+                  {' '}{cohortInfo.terms} terms, {cohortInfo.genes} genes
+                </span>
+              )}
+            </div>
+          </form>
+        )}
+
         {/* Search form */}
-        <form onSubmit={handleSubmit} className="flex gap-2 max-w-xl">
+        <form onSubmit={handleSubmit} className={`gap-2 max-w-xl ${inputMode === 'vo' ? 'flex' : 'hidden'}`}>
           <input
             type="text"
             value={voInput}
