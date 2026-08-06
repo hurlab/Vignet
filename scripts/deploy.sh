@@ -31,6 +31,30 @@ NODE_VERSION="24.14.1"
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_ROOT"
 
+# RUN THIS ON YOUR WORKSTATION, NOT ON THE SERVER.
+#
+# This script is committed, so a copy lands at $SERVER_DIR/scripts/deploy.sh
+# whenever the server resets to origin/main. Running it there is the natural
+# mistake -- "deploy on the deployment host" -- but it cannot work: step one is
+# a Vite build and the server has no node. Worse, it would try to rsync the
+# server's own dist-react/ onto itself over SSH. Refuse early and say why,
+# rather than failing later with a confusing node error.
+if [[ "$(hostname)" == hurlabvm1-med* ]] || [[ "$REPO_ROOT" == "$SERVER_DIR" ]]; then
+  cat >&2 <<MSG
+ERROR: this is the deployment TARGET, not where deploys are driven from.
+
+  deploy.sh runs on your workstation and reaches this server over SSH:
+  build locally -> push -> align server source -> rsync dist-react/ -> verify.
+
+  The build cannot happen here: this server has no node and no npm.
+  (frontend/node_modules/ here is a stale leftover from 2026-03-25.)
+
+  Run instead, on the workstation:
+      cd ~/PROJECTS/10_apps/Vignet && ./scripts/deploy.sh
+MSG
+  exit 1
+fi
+
 MODE="${1:-deploy}"
 
 # The system node on this workstation is v18, which Vite rejects outright
