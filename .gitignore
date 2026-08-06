@@ -30,3 +30,6 @@ nohup.out
 # === Project management (local only) ===
 PROJECT_HANDOFF.md
 PROJECT_LOG.md
+
+# No-paste resume prompt (machine-local, per-session)
+/NEXT_SESSION.md
