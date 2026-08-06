@@ -2,69 +2,15 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../api.js'
 import useDataLastUpdated from '../hooks/useDataLastUpdated'
+import { HOME_TOOL_GROUPS } from '../data/tools.js'
 
-const tools = [
-  {
-    title: 'Explore Vaccines',
-    description: 'Browse, search, and view profiles for 600+ vaccines mined from PubMed literature.',
-    to: '/explore',
-    icon: '\ud83c\udf10',
-  },
-  {
-    title: 'VacNet',
-    description: 'Interactive network visualization of vaccine-gene-drug-disease interaction clusters.',
-    to: '/vacnet',
-    icon: '\ud83d\udd2c',
-  },
-  {
-    title: 'VacPair',
-    description: 'Query a vaccine-gene pair to see co-occurrence evidence and prediction scores.',
-    to: '/vacpair',
-    icon: '\ud83d\udd17',
-  },
-  {
-    title: 'Enrichment',
-    description: 'Input a gene list to discover which vaccines are associated.',
-    to: '/enrichment',
-    icon: '\ud83d\udcca',
-  },
-  {
-    title: 'Compare Vaccines',
-    description: 'Compare two vaccines side by side: shared genes, unique pathways.',
-    to: '/compare',
-    icon: '\u2696\ufe0f',
-  },
-  {
-    title: 'VacSummarAI',
-    description: 'AI-powered summarization of vaccine-gene literature with follow-up chat.',
-    to: '/vacsummarai',
-    icon: '\ud83e\udd16',
-  },
-  {
-    title: 'VO Ontology',
-    description: 'Browse the Vaccine Ontology hierarchy tree and view vaccine details.',
-    to: '/vo-explorer',
-    icon: '\ud83d\udd16',
-  },
-  {
-    title: 'Vaccine Assistant',
-    description: 'Ask questions about vaccine-gene interactions grounded in PubMed evidence.',
-    to: '/assistant',
-    icon: '\ud83d\udcac',
-  },
-  {
-    title: 'Analyze Text',
-    description: 'Paste biomedical text to detect genes and vaccine terms, predict interactions.',
-    to: '/analyze',
-    icon: '\ud83d\udcdd',
-  },
-  {
-    title: 'Generate Report',
-    description: 'Create downloadable HTML reports with vaccine associations and gene analysis.',
-    to: '/report',
-    icon: '\ud83d\udcc4',
-  },
-]
+// Tool cards, their names, their order and their group tints all come from the
+// shared catalogue (src/data/tools.js) -- the same list the header nav renders.
+// This page used to keep its own copy, which is how six tools ended up with two
+// names each depending on whether you met them here or in the header.
+//
+// Groups deliberately straddle rows: the group sizes (4/2/3) do not align to a
+// 3-column grid, and colour + tag carry the grouping instead of row breaks.
 
 function StatCard({ label, value, loading }) {
   return (
@@ -137,19 +83,28 @@ export default function Home() {
       <section>
         <h2 className="text-base font-semibold text-gray-700 mb-3">Tools</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {tools.map(({ title, description, to, icon }) => (
-            <Link
-              key={to}
-              to={to}
-              className="bg-white border border-gray-200 rounded-lg px-4 py-3 hover:border-teal-400 hover:shadow-md transition-all group flex items-start gap-3"
-            >
-              <div className="text-xl flex-shrink-0 mt-0.5">{icon}</div>
-              <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-teal-dark group-hover:text-teal text-sm">{title}</h3>
-                <p className="text-gray-500 text-xs leading-relaxed mt-0.5">{description}</p>
-              </div>
-            </Link>
-          ))}
+          {HOME_TOOL_GROUPS.flatMap(g =>
+            g.tools.map(({ label, description, to, icon }) => (
+              <Link
+                key={to}
+                to={to}
+                className={`${g.card} border rounded-lg px-4 py-3 hover:shadow-md transition-all group flex items-start gap-3`}
+              >
+                <div className="text-xl flex-shrink-0 mt-0.5">{icon}</div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-baseline gap-2">
+                    <h3 className="font-semibold text-teal-dark text-sm">{label}</h3>
+                    {/* Non-colour cue: tint alone would be invisible to
+                        colourblind users and on washed-out projectors. */}
+                    <span className={`${g.tag} text-[10px] font-semibold uppercase tracking-wide rounded px-1.5 py-0.5 flex-shrink-0`}>
+                      {g.label}
+                    </span>
+                  </div>
+                  <p className="text-gray-600 text-xs leading-relaxed mt-0.5">{description}</p>
+                </div>
+              </Link>
+            ))
+          )}
         </div>
       </section>
 
@@ -157,7 +112,7 @@ export default function Home() {
       <section>
         <h2 className="text-base font-semibold text-gray-700 mb-3">For AI Agents</h2>
         <a
-          href="/ignet/api-docs"
+          href="/ignet/mcp"
           className="flex items-center gap-4 bg-white border border-gray-200 rounded-lg p-4 hover:border-teal-400 hover:shadow-md transition-all group"
         >
           <div className="text-2xl flex-shrink-0">&#129302;</div>

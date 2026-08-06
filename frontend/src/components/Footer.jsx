@@ -12,7 +12,7 @@ export default function Footer() {
               <li><a href="/vignet/about" className="text-gray-500 hover:text-teal-dark text-sm transition-colors">About</a></li>
               <li><a href="/ignet/" className="text-gray-500 hover:text-teal-dark text-sm transition-colors">Ignet (Gene Network)</a></li>
               <li><a href="/ignet/api-docs" className="text-gray-500 hover:text-teal-dark text-sm transition-colors">API Docs</a></li>
-              <li><a href="/ignet/api-docs#mcp" className="text-gray-500 hover:text-teal-dark text-sm transition-colors">MCP for AI</a></li>
+              <li><a href="/ignet/mcp" className="text-gray-500 hover:text-teal-dark text-sm transition-colors">MCP for AI</a></li>
             </ul>
           </div>
 
