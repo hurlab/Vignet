@@ -28,6 +28,14 @@ export default class ErrorBoundary extends Component {
           >
             Refresh Page
           </button>
+          {this.state.error && (
+            <details className="mt-6 text-left max-w-xl mx-auto">
+              <summary className="text-xs text-gray-400 cursor-pointer">Error details</summary>
+              <pre className="mt-2 text-xs text-red-600 bg-red-50 p-3 rounded overflow-auto">
+                {this.state.error.toString()}
+              </pre>
+            </details>
+          )}
         </div>
       )
     }
