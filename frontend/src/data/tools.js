@@ -48,6 +48,13 @@ export const TOOL_GROUPS = [
         icon: '🌐',
       },
       {
+        label: 'Vaccine Profile',
+        to: '/vaccine',
+        tagline: 'One vaccine in detail',
+        description: 'Look up a single vaccine by name or VO ID for its associated genes and literature evidence.',
+        icon: '💉',
+      },
+      {
         label: 'VacPair',
         to: '/vacpair',
         tagline: 'Vaccine-gene evidence',
