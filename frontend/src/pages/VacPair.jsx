@@ -2,26 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { api } from '../api.js'
 import LoadingSpinner from '../components/LoadingSpinner.jsx'
-
-function csvSafe(val) {
-  let v = String(val ?? '').replace(/"/g, '""').replace(/[\r\n]+/g, ' ')
-  if (/^[=+\-@\t\r]/.test(v)) v = "'" + v
-  return `"${v}"`
-}
-
-function downloadCsv(rows, headers, filename) {
-  const csv = [
-    headers.join(','),
-    ...rows.map((r) => headers.map((h) => csvSafe(r[h])).join(',')),
-  ].join('\n')
-  const blob = new Blob([csv], { type: 'text/csv' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = filename
-  a.click()
-  URL.revokeObjectURL(url)
-}
+import { downloadCsv } from '../lib/csv.js'
 
 export default function VacPair() {
   const [searchParams, setSearchParams] = useSearchParams()

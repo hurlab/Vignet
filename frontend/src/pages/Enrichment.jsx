@@ -2,28 +2,9 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../api.js'
 import LoadingSpinner from '../components/LoadingSpinner.jsx'
+import { downloadCsv } from '../lib/csv.js'
 
 const EXAMPLE_GENES = 'IFNG\nTNF\nIL2\nIL6\nIL10\nCD4\nCD8A\nSTAT1'
-
-function csvSafe(val) {
-  let v = String(val ?? '').replace(/"/g, '""').replace(/[\r\n]+/g, ' ')
-  if (/^[=+\-@\t\r]/.test(v)) v = "'" + v
-  return `"${v}"`
-}
-
-function downloadCsv(rows, headers, filename) {
-  const csv = [
-    headers.join(','),
-    ...rows.map((r) => headers.map((h) => csvSafe(r[h])).join(',')),
-  ].join('\n')
-  const blob = new Blob([csv], { type: 'text/csv' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = filename
-  a.click()
-  URL.revokeObjectURL(url)
-}
 
 function parseGenes(text) {
   return [
