@@ -8,6 +8,14 @@ dist-react/
 .claude/
 .moai/
 .moai-backups/
+CLAUDE.md
+.claudeignore
+.git_hooks/
+# Agent scaffolding, not this project's CI. Committing it would ship the
+# label-sync workflow and branch-protection template as live GitHub config,
+# and land them in the deployed web directory (the server takes its copy via
+# `git reset --hard origin/main`).
+.github/
 
 # === Environment & Secrets ===
 .env
