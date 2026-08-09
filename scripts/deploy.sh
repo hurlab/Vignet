@@ -103,7 +103,11 @@ if [[ "$MODE" == "--check" ]]; then
 fi
 
 PRUNE=""
-[[ "$MODE" == "--prune" ]] && PRUNE="--delete"
+# --delete-after, not --delete: plain --delete removes stale files *during* the
+# transfer, so there is a window where an old chunk is gone and its replacement
+# is not up yet. --delete-after uploads everything first and prunes at the end,
+# leaving the old assets servable for the whole transfer.
+[[ "$MODE" == "--prune" ]] && PRUNE="--delete-after"
 
 # --------------------------------------------------------------- safety gates
 BR="$(git rev-parse --abbrev-ref HEAD)"

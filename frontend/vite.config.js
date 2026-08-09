@@ -19,6 +19,13 @@ export default defineConfig(({ mode }) => {
     base: '/vignet/',
     build: {
       outDir: '../dist-react',
+      // outDir sits OUTSIDE the Vite root (frontend/), and for that case Vite
+      // defaults emptyOutDir to false -- it will not delete files it cannot be
+      // sure it owns. So every build since June piled fresh hashed chunks on
+      // top of all previous ones: dist-react/assets/ reached 91 files where 16
+      // were live, and rsync shipped all 91 to the server every deploy.
+      // dist-react/ holds only generated output, so emptying it is safe.
+      emptyOutDir: true,
     },
   }
 })
