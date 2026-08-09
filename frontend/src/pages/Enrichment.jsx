@@ -57,13 +57,16 @@ export default function Enrichment() {
 
   function handleExportCsv() {
     if (!result?.results) return
+    // total_evidence is what /vaccine/enrichment actually returns; evidence_count
+    // and pmid_count are kept behind it only as fallbacks. Reading those two alone
+    // is how this column silently exported empty (and rendered 0) for every row.
     const headers = ['vaccine_name', 'vo_id', 'gene_overlap', 'evidence_count', 'matched_genes']
     downloadCsv(
       result.results.map((r) => ({
         vaccine_name: r.vaccine_name ?? '',
         vo_id: r.vo_id ?? '',
         gene_overlap: r.gene_overlap ?? r.overlap_count ?? '',
-        evidence_count: r.evidence_count ?? r.pmid_count ?? '',
+        evidence_count: r.total_evidence ?? r.evidence_count ?? r.pmid_count ?? '',
         matched_genes: (r.matched_genes ?? []).join('; '),
       })),
       headers,
@@ -197,7 +200,7 @@ export default function Enrichment() {
                           <span className="text-gray-400 font-normal">/{totalInput}</span>
                         </td>
                         <td className="px-4 py-2.5 text-right text-gray-600">
-                          {(r.evidence_count ?? r.pmid_count ?? 0).toLocaleString()}
+                          {(r.total_evidence ?? r.evidence_count ?? r.pmid_count ?? 0).toLocaleString()}
                         </td>
                         <td className="px-4 py-2.5 min-w-[100px]">
                           <GeneOverlapBar overlap={overlapCount} total={totalInput} />
