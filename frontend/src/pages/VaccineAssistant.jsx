@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from 'react'
-import LoadingSpinner from '../components/LoadingSpinner.jsx'
 import ErrorMessage from '../components/ErrorMessage.jsx'
 
 const EXAMPLE_QUESTIONS = [
@@ -48,7 +47,6 @@ export default function VaccineAssistant() {
     if (!question.trim()) return
     setError(null)
 
-    const userMessage = { role: 'user', content: question }
     const newMessages = [...messages, { type: 'user', text: question }]
     setMessages(newMessages)
     setInput('')

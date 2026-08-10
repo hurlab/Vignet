@@ -26,7 +26,9 @@ async function request(path, options = {}) {
   } catch (e) {
     clearTimeout(timeoutId)
     if (e.name === 'AbortError') {
-      throw new Error('Request timed out. Please try again.')
+      // cause keeps the original AbortError reachable; without it the timeout
+      // message is all a caller ever sees when diagnosing a failed request.
+      throw new Error('Request timed out. Please try again.', { cause: e })
     }
     throw e
   }

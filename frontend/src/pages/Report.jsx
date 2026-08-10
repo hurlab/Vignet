@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { api } from '../api.js'
-import LoadingSpinner from '../components/LoadingSpinner.jsx'
 import useDataLastUpdated from '../hooks/useDataLastUpdated'
 
 const EXAMPLE_GENES = 'ACE2\nTMPRSS2\nIL6\nTNF\nIFNG\nCD4\nCD8A\nNLRP3\nIL1B\nIL2'
