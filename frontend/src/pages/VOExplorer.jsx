@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { api } from '../api.js'
 import LoadingSpinner from '../components/LoadingSpinner.jsx'
 import VOTree from '../components/VOTree.jsx'
+import ErrorMessage from '../components/ErrorMessage.jsx'
 
 export default function VOExplorer() {
   const [selectedVo, setSelectedVo] = useState(null) // vo_id string
@@ -99,7 +100,7 @@ export default function VOExplorer() {
           )}
 
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded p-3 text-red-700 text-sm">{error}</div>
+            <ErrorMessage message={error} />
           )}
 
           {loading && (

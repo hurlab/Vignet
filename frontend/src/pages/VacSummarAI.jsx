@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { api } from '../api.js'
 import LoadingSpinner from '../components/LoadingSpinner.jsx'
+import ErrorMessage from '../components/ErrorMessage.jsx'
 
 const VACCINE_EXAMPLES = [
   {
@@ -366,7 +367,7 @@ export default function VacSummarAI() {
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded p-3 text-red-700 text-sm">{error}</div>
+        <ErrorMessage message={error} />
       )}
 
       {loading && <LoadingSpinner message="Generating AI summary..." />}

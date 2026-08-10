@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { api } from '../api.js'
 import LoadingSpinner from '../components/LoadingSpinner.jsx'
 import { downloadCsv } from '../lib/csv.js'
+import ErrorMessage from '../components/ErrorMessage.jsx'
 
 const EXAMPLE_GENES = 'IFNG\nTNF\nIL2\nIL6\nIL10\nCD4\nCD8A\nSTAT1'
 
@@ -123,7 +124,7 @@ export default function Enrichment() {
       </form>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded p-3 text-red-700 text-sm">{error}</div>
+        <ErrorMessage message={error} />
       )}
 
       {loading && <LoadingSpinner message="Running enrichment analysis..." />}

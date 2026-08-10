@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { api } from '../api.js'
 import LoadingSpinner from '../components/LoadingSpinner.jsx'
+import ErrorMessage from '../components/ErrorMessage.jsx'
 
 function VaccineProfile({ voId, onClose }) {
   const [profile, setProfile] = useState(null)
@@ -39,9 +40,7 @@ function VaccineProfile({ voId, onClose }) {
       )}
 
       {error && (
-        <div className="mx-4 my-3 bg-red-50 border border-red-200 rounded p-3 text-red-700 text-sm">
-          {error}
-        </div>
+        <ErrorMessage message={error} className="mx-4 my-3" />
       )}
 
       {profile && !loading && (
@@ -268,7 +267,7 @@ export default function Explore() {
       </form>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded p-3 text-red-700 text-sm">{error}</div>
+        <ErrorMessage message={error} />
       )}
 
       {loading ? (

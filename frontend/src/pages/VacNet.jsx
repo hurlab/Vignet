@@ -3,6 +3,7 @@ import { useSearchParams, Link } from 'react-router-dom'
 import { api } from '../api.js'
 import LoadingSpinner from '../components/LoadingSpinner.jsx'
 import VOTree from '../components/VOTree.jsx'
+import ErrorMessage from '../components/ErrorMessage.jsx'
 
 export default function VacNet() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -614,9 +615,7 @@ export default function VacNet() {
         {/* Graph area */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {error && (
-            <div className="mx-4 mt-3 bg-red-50 border border-red-200 rounded p-3 text-red-700 text-sm flex-shrink-0">
-              {error}
-            </div>
+            <ErrorMessage message={error} className="mx-4 mt-3 flex-shrink-0" />
           )}
 
           {loading && (

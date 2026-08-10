@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import LoadingSpinner from '../components/LoadingSpinner.jsx'
+import ErrorMessage from '../components/ErrorMessage.jsx'
 
 const EXAMPLE_QUESTIONS = [
   'What genes are associated with COVID-19 vaccines?',
@@ -233,7 +234,7 @@ export default function VaccineAssistant() {
       )}
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded p-3 text-red-700 text-sm">{error}</div>
+        <ErrorMessage message={error} />
       )}
 
       {/* Input area */}
