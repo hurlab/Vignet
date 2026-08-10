@@ -23,7 +23,12 @@
 
 export function csvSafe(val) {
   let v = String(val ?? '').replace(/"/g, '""').replace(/[\r\n]+/g, ' ')
-  if (/^[=+\-@\t\r]/.test(v)) v = "'" + v
+  // Guard on the first non-space character, not on position 0. Job 2 runs first,
+  // so "\n=BAD()" arrives here as " =BAD()" -- a position-0 check sees the space
+  // and lets it through. Excel itself treats a leading-space cell as text, but any
+  // importer that trims leading whitespace (pandas skipinitialspace, several R
+  // readers) re-arms the formula. Found by csv.test.js, not in the wild.
+  if (/^\s*[=+\-@\t\r]/.test(v)) v = "'" + v
   return `"${v}"`
 }
 
