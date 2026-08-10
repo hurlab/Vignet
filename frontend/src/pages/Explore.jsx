@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { api } from '../api.js'
 import LoadingSpinner from '../components/LoadingSpinner.jsx'
 import ErrorMessage from '../components/ErrorMessage.jsx'
+import { downloadCsv } from '../lib/csv.js'
 
 function VaccineProfile({ voId, onClose }) {
   const [profile, setProfile] = useState(null)
@@ -196,6 +197,9 @@ export default function Explore() {
   const [error, setError] = useState(null)
   const [offset, setOffset] = useState(0)
   const [selectedVo, setSelectedVo] = useState(() => searchParams.get('vo') || null)
+  const [exporting, setExporting] = useState(false)
+  const [exportDone, setExportDone] = useState(0)
+  const [exportError, setExportError] = useState(null)
   const limit = 50
 
   useEffect(() => {
@@ -230,14 +234,73 @@ export default function Explore() {
     setSearchParams({})
   }
 
+  // /vaccine/explore silently caps a page at 200 rows -- limit=641, 1000 and 5000
+  // all return exactly 200, while `total` honestly reports the full count. So a full
+  // export is a sequential walk, not one large request. Verified against the live API
+  // 2026-08-09: offsets 0/200/400/600 yield 200+200+200+41 = 641 unique VO IDs.
+  const EXPORT_PAGE = 200
+
+  // Exports every row matching the current search, not just the 50 on screen. The
+  // page size is a display artifact; someone clicking Export wants the result set.
+  async function handleExportCsv() {
+    if (exporting) return
+    setExporting(true)
+    setExportError(null)
+    setExportDone(0)
+    try {
+      const rows = []
+      let off = 0
+      // Bounded independently of `total` so a server-side change cannot spin forever.
+      // 50 pages x 200 = 10,000 rows, far above the current 641.
+      for (let page = 0; page < 50; page++) {
+        const data = await api.vaccineExplore(search, EXPORT_PAGE, off)
+        const batch = data.vaccines ?? []
+        rows.push(...batch)
+        setExportDone(rows.length)
+        if (batch.length < EXPORT_PAGE) break
+        if (rows.length >= (data.total ?? 0)) break
+        off += EXPORT_PAGE
+      }
+      downloadCsv(
+        rows.map((v) => ({
+          name: v.name ?? '',
+          vo_id: v.vo_id ?? '',
+          mention_count: v.mention_count ?? '',
+          pmid_count: v.pmid_count ?? '',
+        })),
+        ['name', 'vo_id', 'mention_count', 'pmid_count'],
+        search ? `explore_${search.replace(/[^A-Za-z0-9._-]+/g, '_')}.csv` : 'explore_vaccines.csv'
+      )
+    } catch (err) {
+      setExportError(err.message)
+    } finally {
+      setExporting(false)
+    }
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-teal-dark">Explore Vaccines</h1>
-        <p className="text-gray-500 text-sm mt-1">
-          Browse {total.toLocaleString()} vaccines mined from PubMed using the Vaccine Ontology (VO).
-          Click any row to view its profile.
-        </p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-bold text-teal-dark">Explore Vaccines</h1>
+          <p className="text-gray-500 text-sm mt-1">
+            Browse {total.toLocaleString()} vaccines mined from PubMed using the Vaccine Ontology (VO).
+            Click any row to view its profile.
+          </p>
+        </div>
+        {/* Label states the row count so it is clear this exports the whole result
+            set, not the 50 rows currently rendered. */}
+        <button
+          type="button"
+          onClick={handleExportCsv}
+          disabled={exporting || total === 0}
+          aria-busy={exporting}
+          className="border border-teal-600 text-teal-700 hover:bg-teal-50 font-semibold px-4 py-2 rounded text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+        >
+          {exporting
+            ? `Exporting… ${exportDone.toLocaleString()}/${total.toLocaleString()}`
+            : `Export CSV (${total.toLocaleString()})`}
+        </button>
       </div>
 
       {/* Search */}
@@ -268,6 +331,12 @@ export default function Explore() {
 
       {error && (
         <ErrorMessage message={error} />
+      )}
+
+      {/* Kept separate from `error`: the browse fetch's useEffect clears that state on
+          every search/offset change, which would silently swallow an export failure. */}
+      {exportError && (
+        <ErrorMessage message={`Export failed: ${exportError}`} />
       )}
 
       {loading ? (
