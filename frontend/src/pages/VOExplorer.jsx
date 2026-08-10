@@ -4,6 +4,7 @@ import { api } from '../api.js'
 import LoadingSpinner from '../components/LoadingSpinner.jsx'
 import VOTree from '../components/VOTree.jsx'
 import ErrorMessage from '../components/ErrorMessage.jsx'
+import CopyButton from '../components/CopyButton.jsx'
 
 export default function VOExplorer() {
   const [selectedVo, setSelectedVo] = useState(null) // vo_id string
@@ -116,7 +117,7 @@ export default function VOExplorer() {
                 <div className="flex items-start justify-between gap-4 flex-wrap">
                   <div>
                     <h2 className="text-xl font-bold text-teal-dark capitalize leading-tight">{profile.name}</h2>
-                    <p className="text-xs text-gray-400 font-mono mt-0.5">{profile.vo_id}</p>
+                    <p className="text-xs text-gray-400 font-mono mt-0.5">{profile.vo_id}<CopyButton text={profile.vo_id} /></p>
                   </div>
                   <Link
                     to={`/vacnet?vo=${encodeURIComponent(profile.vo_id)}`}

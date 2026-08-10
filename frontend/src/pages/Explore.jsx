@@ -4,6 +4,7 @@ import { api } from '../api.js'
 import LoadingSpinner from '../components/LoadingSpinner.jsx'
 import ErrorMessage from '../components/ErrorMessage.jsx'
 import { downloadCsv } from '../lib/csv.js'
+import CopyButton from '../components/CopyButton.jsx'
 
 function VaccineProfile({ voId, onClose }) {
   const [profile, setProfile] = useState(null)
@@ -51,7 +52,7 @@ function VaccineProfile({ voId, onClose }) {
             <div className="flex items-start justify-between gap-4">
               <div>
                 <h3 className="text-xl font-bold text-teal-dark capitalize">{profile.name}</h3>
-                <p className="text-xs text-gray-500 font-mono mt-0.5">{profile.vo_id}</p>
+                <p className="text-xs text-gray-500 font-mono mt-0.5">{profile.vo_id}<CopyButton text={profile.vo_id} /></p>
               </div>
               <Link
                 to={`/vacnet?vo=${encodeURIComponent(profile.vo_id)}`}

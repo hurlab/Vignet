@@ -4,6 +4,7 @@ import { api } from '../api.js'
 import LoadingSpinner from '../components/LoadingSpinner.jsx'
 import { downloadCsv } from '../lib/csv.js'
 import ErrorMessage from '../components/ErrorMessage.jsx'
+import CopyButton from '../components/CopyButton.jsx'
 
 export default function VacPair() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -326,7 +327,7 @@ export default function VacPair() {
                   <span className="text-gray-400 font-normal mx-2">&mdash;</span>
                   <span className="text-teal-600">{result.gene_symbol}</span>
                 </h2>
-                <p className="text-xs text-gray-400 font-mono mt-0.5">{result.vo_id}</p>
+                <p className="text-xs text-gray-400 font-mono mt-0.5">{result.vo_id}<CopyButton text={result.vo_id} /></p>
               </div>
               <button
                 onClick={handleExportCsv}

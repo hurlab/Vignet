@@ -4,6 +4,7 @@ import { api } from '../api.js'
 import LoadingSpinner from '../components/LoadingSpinner.jsx'
 import { downloadCsv } from '../lib/csv.js'
 import ErrorMessage from '../components/ErrorMessage.jsx'
+import CopyButton from '../components/CopyButton.jsx'
 
 // Reusable vaccine autocomplete input
 function VaccineAutocomplete({ label, value, selectedVaccine, onInput, onSelect, suggestions, showSuggestions, onFocus, containerRef }) {
@@ -48,7 +49,7 @@ function SummaryCard({ profile, label, colorClass }) {
     <div className={`bg-white border-2 ${colorClass} rounded-lg p-4 flex-1`}>
       <div className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">{label}</div>
       <h3 className="font-bold text-teal-dark text-base leading-tight capitalize">{profile.name}</h3>
-      <p className="text-xs text-gray-400 font-mono mt-0.5">{profile.vo_id}</p>
+      <p className="text-xs text-gray-400 font-mono mt-0.5">{profile.vo_id}<CopyButton text={profile.vo_id} /></p>
       <div className="grid grid-cols-2 gap-2 mt-3">
         <div className="bg-gray-50 rounded p-2 text-center">
           <div className="font-bold text-teal-dark text-sm">{profile.total_mentions?.toLocaleString() ?? 0}</div>
