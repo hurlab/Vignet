@@ -5,6 +5,7 @@ import LoadingSpinner from '../components/LoadingSpinner.jsx'
 import VOTree from '../components/VOTree.jsx'
 import ErrorMessage from '../components/ErrorMessage.jsx'
 import CopyButton from '../components/CopyButton.jsx'
+import SourcePublications from '../components/SourcePublications.jsx'
 
 export default function VOExplorer() {
   const [selectedVo, setSelectedVo] = useState(null) // vo_id string
@@ -234,6 +235,8 @@ export default function VOExplorer() {
                   </table>
                 </div>
               )}
+
+              <SourcePublications key={profile.vo_id} voId={profile.vo_id} />
 
               {profile.top_genes?.length === 0 && profile.top_drugs?.length === 0 && profile.top_diseases?.length === 0 && (
                 <div className="bg-white border border-gray-200 rounded-lg p-6 text-center text-gray-400 text-sm shadow-sm">

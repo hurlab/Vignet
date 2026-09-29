@@ -46,6 +46,8 @@ export const api = {
   vaccineProfile: (voId) => request(`/vaccine/${encodeURIComponent(voId)}`),
   vaccineSentences: (voId, limit = 20, offset = 0) =>
     request(`/vaccine/${encodeURIComponent(voId)}/sentences?limit=${limit}&offset=${offset}`),
+  vaccinePapers: (voId, limit = 10, offset = 0) =>
+    request(`/vaccine/${encodeURIComponent(voId)}/papers?limit=${limit}&offset=${offset}`),
   vaccineNetwork: (voId) => request(`/vaccine/network/${encodeURIComponent(voId)}`),
   vaccineTopGenes: () => request('/vaccine/top-genes'),
   vaccineHierarchy: (maxDepth = 10, dataOnly = true) => {
