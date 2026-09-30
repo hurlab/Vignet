@@ -382,3 +382,9 @@ PROJECT_LOG.md
 
 # No-paste resume prompt (machine-local, per-session)
 /NEXT_SESSION.md
+
+# MoAI-generated tooling files — kept local, never published (2026-09-30)
+/.agents/
+/.mcp.json
+/.worktreeinclude
+/AGENTS.md
