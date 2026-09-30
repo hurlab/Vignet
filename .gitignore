@@ -337,3 +337,48 @@ nohup.out
 PROJECT_HANDOFF.md
 PROJECT_LOG.md
 /NEXT_SESSION.md
+
+# ==== Restored verbatim: this project's full pre-sync .gitignore (f818971^) — clobbered by the v3.1.3 template sync on 2026-09-30; appended so project-specific rules regain last-match precedence ====
+# === Dependencies ===
+node_modules/
+
+# === Build output ===
+dist-react/
+
+# === Development tools (local only) ===
+.claude/
+.moai/
+.moai-backups/
+CLAUDE.md
+.claudeignore
+.git_hooks/
+# Agent scaffolding, not this project's CI. Committing it would ship the
+# label-sync workflow and branch-protection template as live GitHub config,
+# and land them in the deployed web directory (the server takes its copy via
+# `git reset --hard origin/main`).
+.github/
+
+# === Environment & Secrets ===
+.env
+.env.*
+*.env
+
+# === OS & Editor ===
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+
+# === Logs ===
+*.log
+nohup.out
+
+# === Project management (local only) ===
+PROJECT_HANDOFF.md
+PROJECT_LOG.md
+
+# No-paste resume prompt (machine-local, per-session)
+/NEXT_SESSION.md
